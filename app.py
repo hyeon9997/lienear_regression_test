@@ -20,7 +20,7 @@ with st.expander("① 속성 이름 설정 (필수)", expanded=True):
     with c3:
         col_f1 = st.text_input("예측에 필요한 데이터1(feature)", value="독립변수1")
     with c4:
-        col_f2 = st.text_input("예측에 필요한 데이터2(feature)", value="독립변수1")
+        col_f2 = st.text_input("예측에 필요한 데이터2(feature)", value="독립변수2")
 st.caption("속성 이름을 설정해준 후 데이터를 입력해주세요.")
 
 # ----------------------------
