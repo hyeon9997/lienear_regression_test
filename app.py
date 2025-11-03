@@ -29,7 +29,7 @@ st.markdown("### ② 6년치 데이터 입력")
 st.caption("년도, 예측값, 예측에 필요한 데이터1·2를 각각 6행 입력하세요. (숫자만)")
 
 # 기본 6년(최근 6개 연도) 템플릿 생성
-current_year = 2025
+current_year = 2021
 base_years = list(range(current_year-5, current_year+1))  # 2020~2025
 template = pd.DataFrame({
     col_year: base_years,
@@ -146,6 +146,30 @@ if train_clicked:
 
         st.success(f"✅ 학습 완료! 6년 데이터로 선형 회귀 모델을 학습했습니다.")
         st.info(f"오차율(MAPE): **{mape:.2f}%**")
+        # --- 회귀식 표시 ---
+        coef = model.coef_
+        intercept = model.intercept_
+
+        feature_names = [col_f1, col_f2]  # 사용한 특성명 순서와 X의 열 순서가 일치해야 함
+
+        # 사람이 읽기 쉬운 텍스트 식
+        terms = [f"{coef[i]:+.4f}×{feature_names[i]}" for i in range(len(feature_names))]
+        equation_text = f"{col_target} = {intercept:.4f} " + " ".join(terms)
+
+        st.markdown("#### 회귀식")
+        st.code(equation_text, language="text")
+
+        # LaTeX로 예쁘게 표시 (변수명에 공백/특수문자 있을 수 있으니 \mathrm{}로 감싸기)
+        def to_latex_name(name: str) -> str:
+            return r"\mathrm{" + name.replace("}", r"\}") \
+                             .replace("{", r"\{") \
+                             .replace("_", r"\_") + "}"
+
+        lhs = to_latex_name(col_target)
+        rhs_terms = [f"{coef[i]:+.4f}\\times {to_latex_name(feature_names[i])}" for i in range(len(feature_names))]
+        latex_eq = rf"\hat{{{lhs}}} = {intercept:.4f} " + " ".join(rhs_terms)
+        st.latex(latex_eq)
+
 
 # ----------------------------
 # 5) +1, +2년 예측
