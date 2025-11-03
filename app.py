@@ -50,7 +50,7 @@ df_input = st.data_editor(
 # ----------------------------
 # 3) 미리보기 표 & 선 그래프
 # ----------------------------
-st.markdown("### ③ 데이터 미리보기 & 그래프")
+st.markdown("### ③ 그래프로 연관성 확인하기")
 
 # 유효성 검사 함수
 def validate_df(df: pd.DataFrame):
@@ -84,7 +84,7 @@ if not valid:
     st.warning(msg)
 else:
     df_clean = df_input.sort_values(col_year).reset_index(drop=True)
-    st.dataframe(df_clean, use_container_width=True)
+    #st.dataframe(df_clean, use_container_width=True)
 
     # 선 그래프 (Altair)
     import altair as alt
