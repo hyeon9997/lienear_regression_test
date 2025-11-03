@@ -6,21 +6,22 @@ from sklearn.metrics import mean_absolute_percentage_error
 
 st.set_page_config(page_title="년도별 데이터 입력 & 예측", layout="wide")
 
-st.title("년도별 데이터 입력 → 시각화 → 선형 회귀 예측")
+st.title("e-지방지표 데이터를 선형 회귀 모델로 예측하기")
 
 # ----------------------------
 # 1) 컬럼 이름 설정
 # ----------------------------
-with st.expander("① 컬럼 이름 설정 (필수)", expanded=True):
+with st.expander("① 속성 이름 설정 (필수)", expanded=True):
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        col_year = st.text_input("년도 컬럼명", value="년도")
+        col_year = st.text_input("년도", value="년도")
     with c2:
-        col_target = st.text_input("예측값(타깃) 컬럼명", value="예측값")
+        col_target = st.text_input("예측값(target)", value="종속변수")
     with c3:
-        col_f1 = st.text_input("예측에 필요한 데이터1 컬럼명", value="특성1")
+        col_f1 = st.text_input("예측에 필요한 데이터1(feature)", value="독립변수1")
     with c4:
-        col_f2 = st.text_input("예측에 필요한 데이터2 컬럼명", value="특성2")
+        col_f2 = st.text_input("예측에 필요한 데이터2(feature)", value="독립변수1")
+st.caption("속성 이름을 설정해준 후 데이터를 입력해주세요.")
 
 # ----------------------------
 # 2) 6년치 데이터 입력
@@ -64,7 +65,7 @@ def validate_df(df: pd.DataFrame):
         df[col_f1] = pd.to_numeric(df[col_f1], errors="coerce")
         df[col_f2] = pd.to_numeric(df[col_f2], errors="coerce")
     except Exception as e:
-        return False, f"숫자 변환 오류: {e}"
+        return False, f"숫자 데이터만 입력해주세요: {e}"
 
     # 결측치 확인
     if df[[col_year, col_target, col_f1, col_f2]].isna().any().any():
@@ -74,7 +75,7 @@ def validate_df(df: pd.DataFrame):
     if df[col_year].nunique() < 3:
         return False, "서로 다른 년도가 최소 3개 이상이어야 합니다."
     if len(df) != 6:
-        return False, "반드시 6행(6년치) 데이터를 입력해야 합니다."
+        return False, "6행에 데이터를 모두 입력해주세요."
 
     return True, "OK"
 
