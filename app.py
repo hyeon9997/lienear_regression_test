@@ -159,7 +159,7 @@ if train_clicked:
 
         st.markdown("#### 회귀식")
         st.code(equation_text, language="text")
-
+        
         # LaTeX로 예쁘게 표시 (변수명에 공백/특수문자 있을 수 있으니 \mathrm{}로 감싸기)
         def to_latex_name(name: str) -> str:
             return r"\mathrm{" + name.replace("}", r"\}") \
@@ -169,7 +169,7 @@ if train_clicked:
         lhs = to_latex_name(col_target)
         rhs_terms = [f"{coef[i]:+.4f}\\times {to_latex_name(feature_names[i])}" for i in range(len(feature_names))]
         latex_eq = rf"\hat{{{lhs}}} = {intercept:.4f} " + " ".join(rhs_terms)
-        st.latex(latex_eq)
+        #st.latex(latex_eq)
 
 
 # ----------------------------
