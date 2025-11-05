@@ -189,7 +189,9 @@ if train_clicked:
 # ----------------------------
 st.markdown("### ⑤ +1, +2년 예측 (표로 입력)")
 
-if st.session_state.model_trained and st.session_state.model is not None:
+if "model_trained" in st.session_state and st.session_state.model_trained:
+    model = st.session_state.model
+    scaler = st.session_state.model.named_steps["standardscaler"]
     ycol = st.session_state.target_col
     f1, f2 = st.session_state.feature_cols
     last_year = st.session_state.last_year
@@ -211,13 +213,12 @@ if st.session_state.model_trained and st.session_state.model is not None:
         submitted = st.form_submit_button("예측하기")
 
     if submitted:
-        # 표준화된 입력값으로 변환
-        scaler = st.session_state.model.named_steps["standardscaler"]
+        # 예측을 위해 표준화된 입력값 변환
         X_new = np.array([[f1_y1, f2_y1], [f1_y2, f2_y2]])
         X_new_scaled = scaler.transform(X_new)  # 표준화된 값으로 변환
 
         # 예측
-        preds = st.session_state.model.predict(X_new_scaled)
+        preds = model.predict(X_new_scaled)
 
         # 예측 결과 출력
         result_df = pd.DataFrame({
