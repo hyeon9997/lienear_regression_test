@@ -198,9 +198,6 @@ if "model_trained" in st.session_state and st.session_state.model_trained:
 
     st.caption(f"마지막 입력 연도: {last_year} → 예측 대상: {last_year+1}, {last_year+2}")
 
-    # 세션 상태 출력 디버깅
-    st.write("세션 상태:", st.session_state)  # 디버깅: 세션 상태 출력
-
     # 데이터 입력폼을 가로로 배치
     with st.form("predict_form"):
         c1, c2, c3 = st.columns(3)
