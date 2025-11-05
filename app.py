@@ -185,9 +185,9 @@ if train_clicked:
         # st.latex(latex_eq)
 
 # ----------------------------
-# 5) +1, +2년 예측
+# 5) +1, +2년 예측 (표 입력 및 결과)
 # ----------------------------
-st.markdown("### ⑤ +1, +2년 예측")
+st.markdown("### ⑤ +1, +2년 예측 (표로 입력)")
 
 if st.session_state.model_trained and st.session_state.model is not None:
     ycol = st.session_state.target_col
@@ -196,42 +196,52 @@ if st.session_state.model_trained and st.session_state.model is not None:
 
     st.caption(f"마지막 입력 연도: {last_year} → 예측 대상: {last_year+1}, {last_year+2}")
 
+    # 표로 입력 받기: +1년, +2년 독립변수1, 독립변수2
+    input_data = pd.DataFrame({
+        "년도": [last_year+1, last_year+2],
+        f1: [0.0, 0.0],  # 초기값 0.0
+        f2: [0.0, 0.0]   # 초기값 0.0
+    })
+
     with st.form("predict_form"):
-        c1, c2 = st.columns(2)
-        with c1:
-            f1_y1 = st.number_input(f"{last_year+1}년 {f1}", value=0.0, step=1.0)
-            f2_y1 = st.number_input(f"{last_year+1}년 {f2}", value=0.0, step=1.0)
-        with c2:
-            f1_y2 = st.number_input(f"{last_year+2}년 {f1}", value=0.0, step=1.0)
-            f2_y2 = st.number_input(f"{last_year+2}년 {f2}", value=0.0, step=1.0)
+        st.write("각 년도에 대한 독립변수 값을 입력하세요.")
+        st.dataframe(input_data)  # 데이터프레임 미리보기
+        
+        # 입력 값 받기
+        for i in range(2):  # +1년, +2년에 대해
+            input_data.at[i, f1] = st.number_input(f"{last_year + i + 1}년 {f1}", value=input_data.at[i, f1], step=1.0)
+            input_data.at[i, f2] = st.number_input(f"{last_year + i + 1}년 {f2}", value=input_data.at[i, f2], step=1.0)
 
         submitted = st.form_submit_button("예측하기")
+
     if submitted:
-        X_future = np.array([[f1_y1, f2_y1], [f1_y2, f2_y2]])
-        preds = st.session_state.model.predict(X_future)
+        # 표준화된 입력값으로 변환
+        scaler = st.session_state.model.named_steps["standardscaler"]
+        X_new = input_data[[f1, f2]].values
+        X_new_scaled = scaler.transform(X_new)  # 표준화된 값으로 변환
 
-        result_df = pd.DataFrame({
-            st.session_state.year_col: [last_year+1, last_year+2],
-            ycol: preds.round(4),
-            f1: [f1_y1, f1_y2],
-            f2: [f2_y1, f2_y2],
-        })
+        # 예측
+        preds = st.session_state.model.predict(X_new_scaled)
 
+        # 예측 결과 출력
+        input_data["예측값"] = preds.round(4)  # 예측값 추가
+
+        # 예측 결과 보여주기
         st.success("예측 완료!")
         st.write(f"학습 시 오차율(MAPE): **{st.session_state.train_mape:.2f}%**")
-        st.dataframe(result_df, use_container_width=True)
+        st.dataframe(input_data, use_container_width=True)
 
         # 예측 포함 그래프(타깃만) - 원값 기준
         import altair as alt
         if valid:
-            df_all = df_input.sort_values(st.session_state.year_col).copy()
-            future_rows = result_df[[st.session_state.year_col, ycol]].copy()
+            future_rows = input_data[[st.session_state.year_col, "예측값"]].copy()
             future_rows["데이터구분"] = "예측"
-            hist_rows = df_all[[st.session_state.year_col, ycol]].copy()
+
+            hist_rows = df_input[[st.session_state.year_col, ycol]].copy()
             hist_rows["데이터구분"] = "실제"
 
             plot2 = pd.concat([hist_rows, future_rows], ignore_index=True)
-            plot2 = plot2.rename(columns={st.session_state.year_col: "년도", ycol: "예측값"})
+            plot2 = plot2.rename(columns={st.session_state.year_col: "년도", "예측값": "예측값"})
             chart2 = (
                 alt.Chart(plot2)
                 .mark_line(point=True)
@@ -244,5 +254,7 @@ if st.session_state.model_trained and st.session_state.model is not None:
                 .properties(width="container", height=320, title="예측값(타깃) 추세")
             )
             st.altair_chart(chart2, use_container_width=True)
+
 else:
     st.info("먼저 위에서 **학습 완료 & 오차율 보기** 버튼을 눌러 모델을 학습하세요.")
+
