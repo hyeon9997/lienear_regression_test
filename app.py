@@ -235,29 +235,6 @@ if "model_trained" in st.session_state and st.session_state.model_trained:
         st.write(f"학습 시 오차율(MAPE): **{st.session_state.train_mape:.2f}%**")
         st.dataframe(result_df, use_container_width=True)
 
-        # 예측 포함 그래프(타깃만) - 원값 기준
-        import altair as alt
-        if valid:
-            future_rows = result_df[[st.session_state.year_col, "예측값"]].copy()
-            future_rows["데이터구분"] = "예측"
-
-            hist_rows = df_input[[st.session_state.year_col, ycol]].copy()
-            hist_rows["데이터구분"] = "실제"
-
-            plot2 = pd.concat([hist_rows, future_rows], ignore_index=True)
-            plot2 = plot2.rename(columns={st.session_state.year_col: "년도", "예측값": "예측값"})
-            chart2 = (
-                alt.Chart(plot2)
-                .mark_line(point=True)
-                .encode(
-                    x=alt.X("년도:O", title="년도"),
-                    y=alt.Y("예측값:Q"),
-                    color=alt.Color("데이터구분:N"),
-                    tooltip=["년도", "예측값", "데이터구분"]
-                )
-                .properties(width="container", height=320, title="예측값(타깃) 추세")
-            )
-            st.altair_chart(chart2, use_container_width=True)
-
+       
 else:
     st.info("먼저 위에서 **학습 완료 & 오차율 보기** 버튼을 눌러 모델을 학습하세요.")
