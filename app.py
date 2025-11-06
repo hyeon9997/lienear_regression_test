@@ -189,9 +189,8 @@ if train_clicked:
 # ----------------------------
 st.markdown("### ⑤ +1, +2년 예측 (표로 입력)")
 
-if "model_trained" in st.session_state and st.session_state.model_trained:
-    model = st.session_state.model
-    scaler = st.session_state.model.named_steps["standardscaler"]
+if st.session_state.model_trained and st.session_state.model is not None:
+    model = st.session_state.model  # 표준화 포함된 파이프라인 모델
     ycol = st.session_state.target_col
     f1, f2 = st.session_state.feature_cols
     last_year = st.session_state.last_year
@@ -213,14 +212,14 @@ if "model_trained" in st.session_state and st.session_state.model_trained:
         submitted = st.form_submit_button("예측하기")
 
     if submitted:
-        # 예측을 위해 표준화된 입력값 변환
-        X_new = np.array([[f1_y1, f2_y1], [f1_y2, f2_y2]])
-        X_new_scaled = scaler.transform(X_new)  # 표준화된 값으로 변환
+        # ✅ 원본 입력값 그대로 사용 (표준화 X)
+        X_new = np.array([[f1_y1, f2_y1],
+                          [f1_y2, f2_y2]], dtype=float)
 
-        # 예측
-        preds = model.predict(X_new_scaled)
+        # 파이프라인이 내부에서 스케일링을 자동 처리함
+        preds = model.predict(X_new)
 
-        # 예측 결과 출력
+        # 예측 결과 DataFrame
         result_df = pd.DataFrame({
             st.session_state.year_col: [last_year+1, last_year+2],
             ycol: preds.round(4),
@@ -228,10 +227,34 @@ if "model_trained" in st.session_state and st.session_state.model_trained:
             f2: [f2_y1, f2_y2],
         })
 
-        st.success("예측 완료!")
+        st.success("✅ 예측 완료!")
         st.write(f"학습 시 오차율(MAPE): **{st.session_state.train_mape:.2f}%**")
         st.dataframe(result_df, use_container_width=True)
 
-       
+        # 예측 포함 그래프(타깃만)
+        import altair as alt
+        if valid:
+            df_all = df_input.sort_values(st.session_state.year_col).copy()
+            future_rows = result_df[[st.session_state.year_col, ycol]].copy()
+            future_rows["데이터구분"] = "예측"
+            hist_rows = df_all[[st.session_state.year_col, ycol]].copy()
+            hist_rows["데이터구분"] = "실제"
+
+            plot2 = pd.concat([hist_rows, future_rows], ignore_index=True)
+            plot2 = plot2.rename(columns={st.session_state.year_col: "년도", ycol: "예측값"})
+
+            chart2 = (
+                alt.Chart(plot2)
+                .mark_line(point=True)
+                .encode(
+                    x=alt.X("년도:O", title="년도"),
+                    y=alt.Y("예측값:Q"),
+                    color=alt.Color("데이터구분:N"),
+                    tooltip=["년도", "예측값", "데이터구분"]
+                )
+                .properties(width="container", height=320, title="예측값(타깃) 추세")
+            )
+            st.altair_chart(chart2, use_container_width=True)
+
 else:
     st.info("먼저 위에서 **학습 완료 & 오차율 보기** 버튼을 눌러 모델을 학습하세요.")
