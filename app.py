@@ -13,29 +13,27 @@ st.title("e-지방지표 데이터를 선형 회귀 모델로 예측하기")
 # ----------------------------
 # 1) 컬럼 이름 설정
 # ----------------------------
-with st.expander("① 속성 이름 설정 (필수)", expanded=True):
+with st.expander("① 데이터 선정", expanded=True):
     c1, c2, c3, c4 = st.columns(4)
     with c1:
         col_year = st.text_input("년도", value="년도")
     with c2:
-        col_target = st.text_input("예측값(target)", value="종속변수")
+        col_target = st.text_input("종속변수/예측값(target)", value="예측하고 싶은 속성명을 입력해주세요.")
     with c3:
-        col_f1 = st.text_input("예측에 필요한 데이터1(feature)", value="독립변수1")
+        col_f1 = st.text_input("독립변수1/입력값(feature)", value="예측에 필요한 속성명을 입력해주세요.")
     with c4:
-        col_f2 = st.text_input("예측에 필요한 데이터2(feature)", value="독립변수2")
+        col_f2 = st.text_input("독립변수2/입력값(feature)", value="예측에 필요한 속성명을 입력해주세요.")
 st.caption("속성 이름을 설정해준 후 데이터를 입력해주세요.")
 
 # ----------------------------
 # 2) 6년치 데이터 입력
 # ----------------------------
 st.markdown("### ② 6년치 데이터 입력")
-st.caption("년도, 예측값, 예측에 필요한 데이터1·2를 각각 6행 입력하세요. (숫자만)")
+st.caption("년도, 종속변수, 예측에 필요한 데이터1·2를 각각 6행 입력하세요. (숫자만)")
 
 # 기본 6년 템플릿 생성 (2016~2021)
-current_year = 2021
-base_years = list(range(current_year-5, current_year+1))  # 2016~2021
 template = pd.DataFrame({
-    col_year: base_years,
+    col_year: [np.nan]*6,
     col_target: [np.nan]*6,
     col_f1: [np.nan]*6,
     col_f2: [np.nan]*6,
